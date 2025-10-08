@@ -3,18 +3,17 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      java: corretto17  # For Maven
+      java: corretto17  # AWS provides Java 17
     commands:
-      - yum update -y
-      - yum install -y maven  # Install Maven if needed
+      - yum install -y maven  # Just install Maven (skip update)
   pre_build:
     commands:
       - echo "Installing Maven..."
-      - mvn --version
+      - mvn --version  # Check Maven
   build:
     commands:
       - echo "Running Maven build..."
-      - mvn clean compile  # Your main command
+      - mvn clean compile  # Your compile
   post_build:
     commands:
       - echo "Build complete!"
