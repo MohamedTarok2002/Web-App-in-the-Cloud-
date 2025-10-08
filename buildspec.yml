@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto17  # For Maven
+    commands:
+      - yum update -y
+      - yum install -y maven  # Install Maven if needed
+  pre_build:
+    commands:
+      - echo "Installing Maven..."
+      - mvn --version
+  build:
+    commands:
+      - echo "Running Maven build..."
+      - mvn clean compile  # Your main command
+  post_build:
+    commands:
+      - echo "Build complete!"
