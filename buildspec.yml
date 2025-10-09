@@ -5,15 +5,20 @@ phases:
     runtime-versions:
       java: corretto17  # AWS provides Java 17
     commands:
-      - yum install -y maven  # Just install Maven (skip update)
+      - yum install -y maven  # Install Maven
   pre_build:
     commands:
       - echo "Installing Maven..."
-      - mvn --version  # Check Maven
+      - mvn --version  # Check Maven installation
   build:
     commands:
       - echo "Running Maven build..."
-      - mvn clean compile  # Your compile
+      - mvn clean compile  # Compile Java code
   post_build:
     commands:
-      - echo "Build complete!"
+      - echo "Build complete!"  # Runs after build success
+
+artifacts:
+  files:
+    - target/*.jar  # Upload compiled JARs to S3
+  discard-paths: yes
