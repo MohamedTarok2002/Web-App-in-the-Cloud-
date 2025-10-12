@@ -20,5 +20,5 @@ phases:
 
 artifacts:
   files:
-    - target/*.war # Upload compiled JARs to S3
+    - '**/*' # Upload compiled JARs to S3
   discard-paths: yes
