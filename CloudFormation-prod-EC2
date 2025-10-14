@@ -31,7 +31,7 @@ Parameters:
   LatestAmiId:
     Description: 'ID of the latest Amazon Linux 2 AMI'
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
-    Default: '/aws/service/ami-amazon-linux-latest/al2-ami-kernel-5.10-x86_64'
+    Default: '/aws/service/ami-amazon-linux-latest/al2023-ami-2023.9.20250929.0-kernel-6.1-x86_64'
 
 Resources:
   # Security Group for the EC2 instance
