@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for a production-ready EC2 instance'
+
+Parameters:
+  InstanceType:
+    Description: 'EC2 instance type'
+    Type: String
+    Default: t3.micro
+    AllowedValues:
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - m5.large
+      - m5.xlarge
+    ConstraintDescription: 'Must be a valid EC2 instance type.'
+
+  KeyName:
+    Description: 'Name of an existing EC2 KeyPair to SSH'
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: 'Must be the name of an existing EC2 KeyPair.'
+
+  InstanceName:
+    Description: 'Name tag for the EC2 instance'
+    Type: String
+    Default: 'Production-EC2-Instance'
+    MinLength: '1'
+    MaxLength: '255'
+    AllowedPattern: '^[a-zA-Z][-a-zA-Z0-9]*$'
+    ConstraintDescription: 'Must be alphanumeric with dashes.'
+
+  LatestAmiId:
+    Description: 'ID of the latest Amazon Linux 2 AMI'
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/al2-ami-kernel-5.10-x86_64'
+
+Resources:
+  # Security Group for the EC2 instance
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'Security group for production EC2 instance allowing SSH and HTTP'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0  # Restrict to your IP in production
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0  # Adjust for production
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0  # Adjust for production
+      Tags:
+        - Key: Name
+          Value: !Sub '${InstanceName}-SG'
+
+  # IAM Role for EC2 instance (basic, attach policies as needed)
+  Ec2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore  # For SSM access
+      Tags:
+        - Key: Name
+          Value: !Sub '${InstanceName}-Role'
+
+  # Instance Profile for the role
+  Ec2Profile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref Ec2Role
+
+  # EC2 Instance
+  Ec2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      ImageId: !Ref LatestAmiId
+      IamInstanceProfile: !Ref Ec2Profile
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Ref InstanceName
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -ex
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+          echo "<h1>Hello from Production EC2!</h1>" > /var/www/html/index.html
+
+Outputs:
+  InstanceId:
+    Description: 'ID of the newly created EC2 instance'
+    Value: !Ref Ec2Instance
+    Export:
+      Name: !Sub '${AWS::StackName}-InstanceId'
+
+  PublicIp:
+    Description: 'Public IP of the newly created EC2 instance'
+    Value: !GetAtt Ec2Instance.PublicIp
+    Export:
+      Name: !Sub '${AWS::StackName}-PublicIp'
