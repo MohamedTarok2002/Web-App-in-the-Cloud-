@@ -77,7 +77,9 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore  # For SSM access
       Tags:
         - Key: Name
-          Value: !Sub '${InstanceName}-Role'
+          Value: !Ref InstanceName
+        - Key: role
+          Value: webserver
 
   # Instance Profile for the role
   Ec2Profile:
