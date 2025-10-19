@@ -1,31 +1,26 @@
 version: 0.2
-
 phases:
   install:
     runtime-versions:
-      java: corretto17  # AWS provides Java 17
-    commands:
-      - yum install -y maven  # Install Maven
-  pre_build:
-    commands:
-      - echo "Installing Maven..."
-      - mvn --version  # Check Maven installation
+      java: corretto17
   build:
     commands:
-      - echo "Running Maven build..."
-      - mvn clean compile
+      - echo "Listing repo contents..."
+      - ls -la .
+      - ls -la src/main/java/ || echo "No Java sources found!"
+      - ls -la src/main/webapp/ || echo "webapp directory missing!"
+      - echo "Running Maven with debug..."
+      - mvn clean package -X -Dmaven.test.skip=true  # Skip tests, enable debug
       - echo "Listing target/ contents..."
-      - ls -la target/  # Debug: Shows WAR file(s)
-      - cp target/nextwork-web-project.war . || echo "WAR file not found!"  # Fallback 
-  
+      - ls -la target/
+      - cp target/nextwork-web-project.war . || echo "WAR file not found! Check src/main/webapp/ or Java sources."
+      - cp appspec.yml . || echo "appspec.yml not found in root!"
   post_build:
     commands:
-      - echo "Build complete!"  # Runs after build success
-
+      - echo "Build complete!"
 artifacts:
   files:
-    - target/nextwork-web-project.war
+    - nextwork-web-project.war
     - appspec.yml
-    - scripts/**/*
+    - scripts/*
   discard-paths: no
-
