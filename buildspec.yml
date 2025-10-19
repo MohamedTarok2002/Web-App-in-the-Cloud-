@@ -13,7 +13,8 @@ phases:
   build:
     commands:
       - echo "Running Maven build..."
-      - mvn clean compile  # Compile Java code
+      - mvn clean compile
+      - cp target/nextwork-web-project.war .  # Copy WAR file to root
   post_build:
     commands:
       - echo "Build complete!"  # Runs after build success
