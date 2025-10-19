@@ -16,8 +16,8 @@ phases:
       - mvn clean compile
       - echo "Listing target/ contents..."
       - ls -la target/  # Debug: Shows WAR file(s)
-      - cp target/nextwork-web-project.war . || echo "WAR file not found!"  # Fallback
-  post_build:
+      - cp target/nextwork-web-project.war . || echo "WAR file not found!"  # Fallback 
+  
   post_build:
     commands:
       - echo "Build complete!"  # Runs after build success
